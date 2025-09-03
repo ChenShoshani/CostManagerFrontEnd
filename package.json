@@ -1,10 +1,16 @@
 {
-  "name": "${PROJECT_NAME}",
+  "name": "CostManagerFrontEnd",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "npm --prefix cost-manager run dev",
+    "build": "npm --prefix cost-manager run build",
+    "preview": "npm --prefix cost-manager run preview",
+    "lint": "npm --prefix cost-manager run lint",
+    "format": "npm --prefix cost-manager run format",
+    "test": "npm --prefix cost-manager run test",
+    "test:watch": "npm --prefix cost-manager run test:watch"
   },
   "private": true
 }
