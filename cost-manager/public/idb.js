@@ -108,7 +108,10 @@
     });
   }
 
-  window.idb = { openCostsDB: openCostsDB };
+  // Expose global as per spec: `db` on the global object
+  window.db = { openCostsDB: openCostsDB };
+  // Backward compatibility for earlier tests/code that referenced `idb`
+  window.idb = window.db;
 })();
 
 
