@@ -1,23 +1,25 @@
 (function () {
-  var DB_NAME = 'costs-db';
-  var DB_VERSION = 1;
-  var COSTS_STORE = 'costs';
+  // Constants for IndexedDB database configuration
+  const DB_NAME = 'costs-db';
+  const DB_VERSION = 1;
+  const COSTS_STORE = 'costs';
 
-  var DEFAULT_RATES = { USD: 1, GBP: 1.8, EURO: 0.7, ILS: 3.4 };
+  // Default exchange rates used as a fallback
+  const DEFAULT_RATES = { USD: 1, GBP: 1.8, EURO: 0.7, ILS: 3.4 };
 
   function openCostsDB(name, version) {
     return new Promise(function (resolve, reject) {
-      var request = indexedDB.open(name || DB_NAME, version || DB_VERSION);
+      const request = indexedDB.open(name || DB_NAME, version || DB_VERSION);
       request.onupgradeneeded = function () {
-        var db = request.result;
+        const db = request.result;
         if (!db.objectStoreNames.contains(COSTS_STORE)) {
-          var costs = db.createObjectStore(COSTS_STORE, { keyPath: 'id', autoIncrement: true });
+          const costs = db.createObjectStore(COSTS_STORE, { keyPath: 'id', autoIncrement: true });
           costs.createIndex('byYearMonth', ['year', 'month']);
         }
       };
       request.onerror = function () { reject(request.error); };
       request.onsuccess = function () {
-        var db = request.result;
+        const db = request.result;
         resolve({
           addCost: function (cost) { return addCost(db, cost); },
           getReport: function (year, month, currency) { return getReport(db, year, month, currency); },
@@ -28,9 +30,9 @@
 
   function withStore(db, storeName, mode, fn) {
     return new Promise(function (resolve, reject) {
-      var tx = db.transaction(storeName, mode);
-      var store = tx.objectStore(storeName);
-      var result = fn(store);
+      const tx = db.transaction(storeName, mode);
+      const store = tx.objectStore(storeName);
+      const result = fn(store);
       tx.oncomplete = function () { resolve(result); };
       tx.onerror = function () { reject(tx.error); };
       tx.onabort = function () { reject(tx.error); };
@@ -38,8 +40,8 @@
   }
 
   function addCost(db, cost) {
-    var now = new Date();
-    var record = {
+    const now = new Date();
+    const record = {
       sum: cost.sum,
       currency: cost.currency,
       category: cost.category,
@@ -61,9 +63,9 @@
   }
 
   function convertAmount(amount, from, to, rates) {
-    var r = rates || DEFAULT_RATES;
-    var src = r[from];
-    var tgt = r[to];
+    const r = rates || DEFAULT_RATES;
+    const src = r[from];
+    const tgt = r[to];
     if (typeof src !== 'number' || typeof tgt !== 'number') {
       return amount;
     }
@@ -71,13 +73,13 @@
   }
 
   function getReport(db, year, month, currency) {
-    var items = [];
+    const items = [];
     return withStore(db, COSTS_STORE, 'readonly', function (store) {
-      var index = store.index('byYearMonth');
-      var range = month ? IDBKeyRange.only([year, month]) : IDBKeyRange.bound([year, 1], [year, 12]);
-      var request = index.openCursor(range);
+      const index = store.index('byYearMonth');
+      const range = month ? IDBKeyRange.only([year, month]) : IDBKeyRange.bound([year, 1], [year, 12]);
+      const request = index.openCursor(range);
       request.onsuccess = function () {
-        var cursor = request.result;
+        const cursor = request.result;
         if (cursor) {
           items.push(cursor.value);
           cursor.continue();
@@ -85,10 +87,10 @@
       };
     }).then(function () {
       return loadRates().then(function (rates) {
-        var totalConverted = 0;
-        var normalized = items.map(function (c) {
-          var d = new Date(c.date);
-          var day = d.getDate();
+        let totalConverted = 0;
+        const normalized = items.map(function (c) {
+          const d = new Date(c.date);
+          const day = d.getDate();
           totalConverted += convertAmount(c.sum, c.currency, currency || 'USD', rates);
           return {
             sum: c.sum,
