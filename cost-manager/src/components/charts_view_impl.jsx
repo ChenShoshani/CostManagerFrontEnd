@@ -6,7 +6,11 @@ import { supportedCurrencies } from '../utils/currency.js';
 import { buildBarSeries, buildPieSeries, chartColors } from '../utils/charts.js';
 
 /**
- * Charts: Pie (by category for selected month) and Bar (totals per month in selected year).
+ * ChartsView
+ * Renders:
+ * - Pie chart: totals by category for selected month/year
+ * - Bar chart: totals per month for selected year
+ * Conversion is performed at render time using current exchange rates.
  */
 const ChartsView = () => {
   const [year, setYear] = useState(new Date().getFullYear());

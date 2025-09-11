@@ -1,65 +1,72 @@
-import React, { useMemo, useState } from 'react';
-import { CssBaseline, AppBar, Tabs, Tab, Toolbar, Typography, Box, Container, Alert } from '@mui/material';
+import React, { useState } from 'react';
+import { AppBar, Box, Button, Container, Stack, Toolbar, Typography } from '@mui/material';
 import AddCostForm from './components/AddCostForm.jsx';
 import ReportView from './components/ReportView.jsx';
 import ChartsView from './components/ChartsView.jsx';
 import SettingsView from './components/SettingsView.jsx';
 import { useExchangeRates } from './hooks/use_exchange_rates.js';
 
-// App: top-level layout with navigation tabs and content routing.
-const TabPanel = ({ children, index, value }) => {
-  if (value !== index) {
-    return null;
-  }
-  return <Box sx={{ py: 2 }}>{children}</Box>;
-};
+/**
+ * App
+ * Top-level shell that provides simple navigation between the four views
+ * (Add, Report, Charts, Settings). On mount, it initializes exchange
+ * rates via the `useExchangeRates` hook so that conversions work across
+ * the app.
+ */
+const App = () => {
+  const [view, setView] = useState('add');
+  const { error } = useExchangeRates();
 
-export default function App() {
-  const [tab, setTab] = useState(0);
-  const ratesState = useExchangeRates();
-  const handleChange = (_event, newValue) => {
-    setTab(newValue);
+  const renderView = () => {
+    switch (view) {
+      case 'add':
+        return <AddCostForm />;
+      case 'report':
+        return <ReportView />;
+      case 'charts':
+        return <ChartsView />;
+      case 'settings':
+        return <SettingsView />;
+      default:
+        return <AddCostForm />;
+    }
   };
 
-  const tabs = useMemo(
-    () => [
-      { label: 'Add Cost', component: <AddCostForm /> },
-      { label: 'Report', component: <ReportView /> },
-      { label: 'Charts', component: <ChartsView /> },
-      { label: 'Settings', component: <SettingsView /> },
-    ],
-    [],
-  );
-
   return (
-    <>
-      <CssBaseline />
+    <Box sx={{ minHeight: '100vh', bgcolor: '#fafafa' }}>
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Cost Manager
           </Typography>
-          <Tabs value={tab} onChange={handleChange} textColor="inherit" indicatorColor="secondary">
-            {tabs.map((t, i) => (
-              <Tab key={t.label} label={t.label} id={`nav-${i}`} />
-            ))}
-          </Tabs>
+          <Stack direction="row" spacing={1}>
+            <Button color="inherit" onClick={() => setView('add')} aria-label="Add">
+              Add
+            </Button>
+            <Button color="inherit" onClick={() => setView('report')} aria-label="Report">
+              Report
+            </Button>
+            <Button color="inherit" onClick={() => setView('charts')} aria-label="Charts">
+              Charts
+            </Button>
+            <Button color="inherit" onClick={() => setView('settings')} aria-label="Settings">
+              Settings
+            </Button>
+          </Stack>
         </Toolbar>
       </AppBar>
-      <Container maxWidth="md">
-        {ratesState.error && (
-          <Box sx={{ mt: 2 }}>
-            <Alert severity="warning">{ratesState.error}</Alert>
-          </Box>
+      <Container maxWidth="md" sx={{ py: 2 }}>
+        {error && (
+          <Typography color="error" variant="body2" sx={{ mb: 2 }}>
+            {error}
+          </Typography>
         )}
-        {tabs.map((t, i) => (
-          <TabPanel key={t.label} index={i} value={tab}>
-            {t.component}
-          </TabPanel>
-        ))}
+        {renderView()}
       </Container>
-    </>
+    </Box>
   );
-}
+};
+
+export default App;
 
 

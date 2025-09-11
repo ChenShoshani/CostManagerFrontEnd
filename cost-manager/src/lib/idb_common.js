@@ -1,5 +1,10 @@
 import { convertAmount } from '../utils/currency.js';
 
+/**
+ * Shared low-level IndexedDB helpers and operations.
+ * This module is imported by both the React-facing wrapper and tests.
+ */
+
 const DB_NAME = 'costs-db';
 const DB_VERSION = 1;
 const COSTS_STORE = 'costs';
@@ -10,6 +15,10 @@ const SETTINGS_STORE = 'settings';
  * @param {string} [name]
  * @param {number} [version]
  * @returns {Promise<IDBDatabase>}
+ */
+/**
+ * Open (and upgrade if needed) the Costs IndexedDB database.
+ * Creates object stores and indices on first run.
  */
 export const openCostsDB = (name = DB_NAME, version = DB_VERSION) => {
   return new Promise((resolve, reject) => {
@@ -38,6 +47,9 @@ export const openCostsDB = (name = DB_NAME, version = DB_VERSION) => {
  * @param {(store: IDBObjectStore) => T} fn
  * @returns {Promise<T>}
  */
+/**
+ * Wrap an IndexedDB transaction and resolve on completion.
+ */
 const withStore = (db, storeName, mode, fn) => {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(storeName, mode);
@@ -54,6 +66,9 @@ const withStore = (db, storeName, mode, fn) => {
  * @param {IDBDatabase} db
  * @param {{sum:number,currency:string,category:string,description:string}} cost
  * @returns {Promise<{sum:number,currency:string,category:string,description:string}>}
+ */
+/**
+ * Add a new cost item. Date/year/month are derived from now.
  */
 export const addCost = async (db, cost) => {
   const now = new Date();
@@ -77,6 +92,9 @@ export const addCost = async (db, cost) => {
  * @param {number|undefined} month
  * @param {string} [currency]
  * @returns {Promise<{year:number,month:number|undefined,costs:Array<any>,total:{currency:string,total:number}}>} 
+ */
+/**
+ * Get report for a month or whole year in a target currency.
  */
 export const getReport = async (db, year, month, currency = 'USD') => {
   const items = [];
@@ -111,13 +129,18 @@ export const getReport = async (db, year, month, currency = 'USD') => {
  * @param {number} year
  * @param {string} [currency]
  */
+/**
+ * Convenience wrapper: yearly report in a target currency.
+ */
 export const getYearReport = async (db, year, currency = 'USD') => {
   return getReport(db, year, undefined, currency);
 };
 
+/** Save a key/value setting in the settings store. */
 export const setSetting = async (db, key, value) =>
   withStore(db, SETTINGS_STORE, 'readwrite', (store) => store.put(value, key));
 
+/** Read a key from the settings store. */
 export const getSetting = async (db, key) =>
   new Promise((resolve, reject) => {
     const tx = db.transaction(SETTINGS_STORE, 'readonly');

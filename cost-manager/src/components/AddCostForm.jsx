@@ -2,8 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { Alert, Box, Button, MenuItem, Stack, TextField } from '@mui/material';
 import { idb } from '../lib/idb.module.js';
 
-// AddCostForm: form for adding a new cost item into IndexedDB.
-// Validates inputs and shows success/error messages.
+// AddCostForm: controlled form for adding a new cost item into IndexedDB.
+// Performs minimal validation and displays success/error feedback.
 const currencies = ['USD', 'ILS', 'GBP', 'EURO'];
 const categories = ['Food', 'Travel', 'Health', 'Utilities', 'Entertainment', 'Other'];
 
@@ -78,5 +78,6 @@ const AddCostForm = () => {
 };
 
 export default AddCostForm;
+
 
 

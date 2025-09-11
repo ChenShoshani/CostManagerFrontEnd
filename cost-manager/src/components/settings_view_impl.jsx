@@ -6,6 +6,9 @@ import { SettingsError } from '../utils/errors.js';
 
 const DEFAULT_RATES_URL = '/exchange-rates.json';
 
+/**
+ * Validate the rates JSON matches the required schema and values.
+ */
 const isValidRates = (json) => {
   if (!json || typeof json !== 'object') {
     return false;
@@ -23,6 +26,10 @@ const isValidRates = (json) => {
   return true;
 };
 
+/**
+ * SettingsView: allows configuring the exchange rates URL.
+ * Validates the URL by fetching JSON and applies rates globally.
+ */
 const SettingsView = () => {
   const [url, setUrl] = useState('');
   const [rates, setRates] = useState(null);
@@ -43,6 +50,7 @@ const SettingsView = () => {
     run();
   }, []);
 
+  /** Fetch the provided URL, validate JSON, save URL and apply rates. */
   const testAndSave = async () => {
     try {
       setError('');
@@ -70,6 +78,7 @@ const SettingsView = () => {
     }
   };
 
+  /** Reset to the default embedded rates JSON. */
   const resetToDefault = async () => {
     try {
       setError('');

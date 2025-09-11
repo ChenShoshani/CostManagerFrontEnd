@@ -4,6 +4,9 @@ import { setRates } from '../utils/currency.js';
 
 const DEFAULT_RATES_URL = '/exchange-rates.json';
 
+/**
+ * Validate the rates JSON matches the required schema and values.
+ */
 const isValidRates = (json) => {
   if (!json || typeof json !== 'object') {
     return false;
@@ -21,6 +24,12 @@ const isValidRates = (json) => {
   return true;
 };
 
+/**
+ * useExchangeRates
+ * Loads the exchange rates from a saved URL (or default),
+ * validates them, applies them to the global currency module,
+ * and persists the effective URL in settings.
+ */
 export const useExchangeRates = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

@@ -3,6 +3,9 @@ import { CurrencyError } from './errors.js';
 
 let currentRates = { USD: 1, GBP: 1.8, EURO: 0.7, ILS: 3.4 };
 
+/**
+ * Replace the current in-memory exchange rates after validation.
+ */
 export const setRates = (rates) => {
   const keys = ['USD', 'GBP', 'EURO', 'ILS'];
   for (const key of keys) {
@@ -13,8 +16,14 @@ export const setRates = (rates) => {
   currentRates = { ...rates };
 };
 
+/**
+ * Return a copy of the currently effective exchange rates.
+ */
 export const getRates = () => ({ ...currentRates });
 
+/**
+ * Convert an amount from sourceCurrency to targetCurrency using current rates.
+ */
 export const convertAmount = (amount, sourceCurrency, targetCurrency) => {
   const rates = currentRates;
   if (!supportedCurrencies.includes(sourceCurrency) || !supportedCurrencies.includes(targetCurrency)) {

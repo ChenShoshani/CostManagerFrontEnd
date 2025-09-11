@@ -10,7 +10,8 @@ const yearsAround = () => {
 };
 
 /**
- * Report table for a selected month/year with on-the-fly currency conversion.
+ * ReportView: tabular report for a selected month/year.
+ * Performs conversion per-row and shows a total in the selected currency.
  */
 const ReportView = () => {
   const [year, setYear] = useState(new Date().getFullYear());

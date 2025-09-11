@@ -1,7 +1,7 @@
 import { openCostsDB as coreOpen, addCost as coreAdd, getReport as coreReport, getYearReport as coreYearReport, setSetting as coreSetSetting, getSetting as coreGetSetting } from './idb_common.js';
 
 /**
- * Thin wrapper class that keeps a single open DB instance
+ * React-facing wrapper class that keeps a single open DB instance
  * and exposes convenient async methods for app usage.
  */
 class CostsDB {

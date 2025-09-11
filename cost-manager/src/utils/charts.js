@@ -11,6 +11,9 @@ export const chartColors = [
   '#455a64',
 ];
 
+/**
+ * Aggregate costs by category for a pie chart, converting to the display currency.
+ */
 export const buildPieSeries = (costs, currency) => {
   const byCategory = {};
   for (const c of costs) {
@@ -20,6 +23,9 @@ export const buildPieSeries = (costs, currency) => {
   return Object.entries(byCategory).map(([name, value]) => ({ name, value }));
 };
 
+/**
+ * Aggregate costs per month for a bar chart, converting to the display currency.
+ */
 export const buildBarSeries = (costs, year, currency) => {
   const byMonth = Array(12).fill(0);
   for (const c of costs) {

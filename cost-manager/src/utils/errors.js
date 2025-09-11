@@ -1,3 +1,7 @@
+/**
+ * Centralized error types for domain-specific failures.
+ * Use these to attach a short code and optional details for better UX/logging.
+ */
 export class AppError extends Error {
   constructor(code, message, details) {
     super(message);

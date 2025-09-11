@@ -4,6 +4,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import App from './App.jsx';
 import './styles.css';
 
+// Global MUI theme for consistent look & feel.
 const theme = createTheme({
   palette: {
     mode: 'light',
