@@ -2,29 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Box, Button, Stack, TextField, Typography } from '@mui/material';
 import { idb } from '../lib/idb.module.js';
 import { setRates as setGlobalRates } from '../utils/currency.js';
+import { fetchRates } from '../api/exchange_rates.js';
 import { SettingsError } from '../utils/errors.js';
 
 const DEFAULT_RATES_URL = '/exchange-rates.json';
 
-/**
- * Validate the rates JSON matches the required schema and values.
- */
-const isValidRates = (json) => {
-  if (!json || typeof json !== 'object') {
-    return false;
-  }
-  const keys = ['USD', 'GBP', 'EURO', 'ILS'];
-  for (const k of keys) {
-    if (!Object.prototype.hasOwnProperty.call(json, k)) {
-      return false;
-    }
-    const v = json[k];
-    if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) {
-      return false;
-    }
-  }
-  return true;
-};
+// Validation moved to the API module.
 
 /**
  * SettingsView: allows configuring the exchange rates URL.
@@ -60,14 +43,7 @@ const SettingsView = () => {
         setError('Please provide a valid URL.');
         return;
       }
-      const response = await fetch(candidate, { mode: 'cors' });
-      if (!response.ok) {
-        throw new SettingsError('RATES_FETCH_FAILED', `Failed to fetch rates. Status ${response.status}`, { status: response.status });
-      }
-      const json = await response.json();
-      if (!isValidRates(json)) {
-        throw new SettingsError('INVALID_RATES_JSON', 'Invalid rates JSON. Expect keys USD, GBP, EURO, ILS with numeric values.', { json });
-      }
+      const json = await fetchRates(candidate);
       await idb.setSetting('exchangeRatesUrl', candidate);
       setGlobalRates(json);
       setRates(json);
@@ -83,14 +59,7 @@ const SettingsView = () => {
     try {
       setError('');
       setSuccess('');
-      const response = await fetch(DEFAULT_RATES_URL, { mode: 'cors' });
-      if (!response.ok) {
-        throw new SettingsError('RATES_FETCH_FAILED', `Failed to fetch rates. Status ${response.status}`, { status: response.status });
-      }
-      const json = await response.json();
-      if (!isValidRates(json)) {
-        throw new SettingsError('INVALID_RATES_JSON', 'Invalid rates JSON. Expect keys USD, GBP, EURO, ILS with numeric values.', { json });
-      }
+      const json = await fetchRates(DEFAULT_RATES_URL);
       await idb.setSetting('exchangeRatesUrl', DEFAULT_RATES_URL);
       setUrl(DEFAULT_RATES_URL);
       setGlobalRates(json);
