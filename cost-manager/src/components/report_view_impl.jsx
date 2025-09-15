@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Box, FormControl, InputLabel, MenuItem, Paper, Select, Stack, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, Typography } from '@mui/material';
 import { idb } from '../lib/idb.module.js';
-import { convertAmount, supportedCurrencies } from '../utils/currency.js';
+import { supportedCurrencies } from '../utils/currency.js';
 
 const yearsAround = () => {
   const now = new Date();
@@ -11,13 +11,13 @@ const yearsAround = () => {
 
 /**
  * ReportView: tabular report for a selected month/year.
- * Performs conversion per-row and shows a total in the selected currency.
+ * Shows original item amounts; only the overall total is converted.
  */
 const ReportView = () => {
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [currency, setCurrency] = useState('USD');
-  const [data, setData] = useState({ costs: [], total: 0 });
+  const [data, setData] = useState({ costs: [], total: { currency: 'USD', total: 0 } });
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -87,13 +87,12 @@ const ReportView = () => {
               <TableCell>Category</TableCell>
               <TableCell>Description</TableCell>
               <TableCell align="right">Amount</TableCell>
-              <TableCell align="right">Converted ({currency})</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {data.costs.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5}>
+                <TableCell colSpan={4}>
                   <Typography className="empty-state">No items for selection.</Typography>
                 </TableCell>
               </TableRow>
@@ -104,17 +103,16 @@ const ReportView = () => {
                 <TableCell>{c.category}</TableCell>
                 <TableCell>{c.description}</TableCell>
                 <TableCell align="right">{`${c.sum.toFixed(2)} ${c.currency}`}</TableCell>
-                <TableCell align="right">{`${convertAmount(c.sum, c.currency, currency).toFixed(2)} ${currency}`}</TableCell>
               </TableRow>
             ))}
           </TableBody>
           <TableFooter>
             <TableRow>
-              <TableCell colSpan={4} align="right">
+              <TableCell colSpan={3} align="right">
                 <strong>Total</strong>
               </TableCell>
               <TableCell align="right">
-                {`${data.costs.reduce((acc, c) => acc + convertAmount(c.sum, c.currency, currency), 0).toFixed(2)} ${currency}`}
+                {`${Number(data?.total?.total ?? 0).toFixed(2)} ${data?.total?.currency ?? currency}`}
               </TableCell>
             </TableRow>
           </TableFooter>
