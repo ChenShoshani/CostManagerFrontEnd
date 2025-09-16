@@ -34,7 +34,11 @@ const SettingsView = () => {
   }, []);
 
   /** Fetch the provided URL, validate JSON, save URL and apply rates. */
-  const testAndSave = async () => {
+  const testAndSave = async (evt) => {
+    if (evt && typeof evt.preventDefault === 'function') {
+      evt.preventDefault();
+      evt.stopPropagation();
+    }
     try {
       setError('');
       setSuccess('');
@@ -55,7 +59,11 @@ const SettingsView = () => {
   };
 
   /** Reset to the default ER-API endpoint. */
-  const resetToDefault = async () => {
+  const resetToDefault = async (evt) => {
+    if (evt && typeof evt.preventDefault === 'function') {
+      evt.preventDefault();
+      evt.stopPropagation();
+    }
     try {
       setError('');
       setSuccess('');
@@ -77,10 +85,10 @@ const SettingsView = () => {
         {error && <Alert severity="error">{error}</Alert>}
         {success && <Alert severity="success">{success}</Alert>}
         <TextField label="Exchange rates URL" value={url} onChange={(e) => setUrl(e.target.value)} />
-        <Button variant="contained" onClick={testAndSave}>
+        <Button variant="contained" type="button" onClick={testAndSave}>
           Test & Save
         </Button>
-        <Button variant="text" onClick={resetToDefault}>
+        <Button variant="text" type="button" onClick={resetToDefault}>
           Reset to default
         </Button>
         {rates && (
