@@ -95,19 +95,19 @@ const SettingsView = () => {
           <Box>
             <Box
               sx={{
-                bgcolor: '#fff',
-                color: '#000',
+                bgcolor: 'background.paper',
+                color: 'text.primary',
                 border: '1px solid rgba(0,0,0,0.12)',
                 borderRadius: 1,
                 p: 2,
               }}
             >
-              <Typography variant="subtitle1" sx={{ color: 'inherit', mb: 1 }}>Current rates</Typography>
+              <Typography variant="subtitle1" sx={{ color: 'text.primary', mb: 1 }}>Current rates</Typography>
               <Box
                 component="pre"
                 sx={{
                   m: 0,
-                  color: 'inherit',
+                  color: 'text.primary',
                   fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
                   fontSize: 12,
                   overflow: 'auto',
@@ -115,7 +115,7 @@ const SettingsView = () => {
               >
                 {JSON.stringify(rates, null, 2)}
               </Box>
-              <Typography variant="caption" sx={{ color: 'inherit', display: 'block', mt: 1 }}>
+              <Typography variant="caption" sx={{ color: 'text.primary', display: 'block', mt: 1 }}>
                 Last fetched: {lastFetch}
               </Typography>
             </Box>
