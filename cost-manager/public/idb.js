@@ -8,30 +8,46 @@
   const COSTS_STORE = 'costs';
 
   const DEFAULT_RATES = { USD: 1, GBP: 1.8, EURO: 0.7, ILS: 3.4 };
+  const DEFAULT_RATES_URL = 'https://api.exchangerate-api.com/v4/latest/USD';
+  let db = null;
 
   /**
-   * Open the database and return an API with bound methods.
-   * @param {string} [name]
-   * @param {number} [version]
-   * @returns {Promise<{addCost:Function,getReport:Function}>}
+   * Normalize incoming JSON from either flat or nested { rates } responses.
+   * Maps EUR -> EURO and upper-cases currency codes.
    */
-  function openCostsDB(name, version) {
+  function normalizeIncomingRates(json) {
+    if (!json || typeof json !== 'object') { return {}; }
+    var source = (json && typeof json === 'object' && json.rates && typeof json.rates === 'object') ? json.rates : json;
+    var out = {};
+    for (var key in source) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
+        var upper = String(key).toUpperCase();
+        var normalizedKey = upper === 'EUR' ? 'EURO' : upper;
+        out[normalizedKey] = source[key];
+      }
+    }
+    return out;
+  }
+
+  /**
+   * openCostsDB(databaseName, databaseVersion)
+   * Opens the IndexedDB and stores the reference in a module-scoped variable.
+   * Returns a Promise resolving to the DB instance, as per spec.
+   */
+  function openCostsDB(databaseName, databaseVersion) {
     return new Promise(function (resolve, reject) {
-      const request = indexedDB.open(name || DB_NAME, version || DB_VERSION);
-      request.onupgradeneeded = function () {
-        const db = request.result;
-        if (!db.objectStoreNames.contains(COSTS_STORE)) {
-          const costs = db.createObjectStore(COSTS_STORE, { keyPath: 'id', autoIncrement: true });
-          costs.createIndex('byYearMonth', ['year', 'month']);
+      const request = indexedDB.open(databaseName || DB_NAME, typeof databaseVersion === 'number' ? databaseVersion : 1);
+      request.onupgradeneeded = function (event) {
+        const upgradeDb = event.target.result;
+        if (!upgradeDb.objectStoreNames.contains(COSTS_STORE)) {
+          const store = upgradeDb.createObjectStore(COSTS_STORE, { keyPath: 'id', autoIncrement: true });
+          store.createIndex('byYearMonth', ['year', 'month']);
         }
       };
-      request.onerror = function () { reject(request.error); };
-      request.onsuccess = function () {
-        const db = request.result;
-        resolve({
-          addCost: function (cost) { return addCost(db, cost); },
-          getReport: function (year, month, currency) { return getReport(db, year, month, currency); },
-        });
+      request.onerror = function (event) { reject(event.target.error); };
+      request.onsuccess = function (event) {
+        db = event.target.result;
+        resolve(db);
       };
     });
   }
@@ -39,9 +55,9 @@
   /**
    * Run a function within a transaction and resolve on completion.
    */
-  function withStore(db, storeName, mode, fn) {
+  function withStore(dbInstance, storeName, mode, fn) {
     return new Promise(function (resolve, reject) {
-      const tx = db.transaction(storeName, mode);
+      const tx = dbInstance.transaction(storeName, mode);
       const store = tx.objectStore(storeName);
       const result = fn(store);
       tx.oncomplete = function () { resolve(result); };
@@ -53,7 +69,8 @@
   /**
    * Add a cost item; date/year/month are derived from now.
    */
-  function addCost(db, cost) {
+  function addCost(cost) {
+    if (!db) { return Promise.reject(new Error('Database not initialized. Call openCostsDB() first.')); }
     const now = new Date();
     const record = {
       sum: cost.sum,
@@ -74,8 +91,20 @@
    * Fetch exchange rates or fall back to defaults.
    */
   function loadRates() {
-    return fetch('/exchange-rates.json', { mode: 'cors' })
+    return fetch(DEFAULT_RATES_URL, { mode: 'cors' })
       .then(function (r) { if (!r.ok) { throw new Error('status ' + r.status); } return r.json(); })
+      .then(function (raw) {
+        var normalized = normalizeIncomingRates(raw);
+        if (
+          typeof normalized.USD === 'number' && isFinite(normalized.USD) && normalized.USD > 0 &&
+          typeof normalized.GBP === 'number' && isFinite(normalized.GBP) && normalized.GBP > 0 &&
+          typeof normalized.EURO === 'number' && isFinite(normalized.EURO) && normalized.EURO > 0 &&
+          typeof normalized.ILS === 'number' && isFinite(normalized.ILS) && normalized.ILS > 0
+        ) {
+          return { USD: normalized.USD, GBP: normalized.GBP, EURO: normalized.EURO, ILS: normalized.ILS };
+        }
+        throw new Error('invalid rates json');
+      })
       .catch(function (e) { console.error('Failed to load exchange rates. Using defaults.', e); return DEFAULT_RATES; });
   }
 
@@ -95,7 +124,8 @@
   /**
    * Build a detailed report for a given year/month and currency.
    */
-  function getReport(db, year, month, currency) {
+  function getReport(year, month, currency) {
+    if (!db) { return Promise.reject(new Error('Database not initialized. Call openCostsDB() first.')); }
     const items = [];
     return withStore(db, COSTS_STORE, 'readonly', function (store) {
       const index = store.index('byYearMonth');
@@ -134,7 +164,10 @@
   }
 
   // Expose global as per spec: `idb` on the global object
-  window.idb = { openCostsDB: openCostsDB };
+  // Support both styles:
+  // 1) const db = await idb.openCostsDB(...); await db.addCost(...)
+  // 2) await idb.addCost(...); await idb.getReport(...)
+  window.idb = { openCostsDB: openCostsDB, addCost: addCost, getReport: getReport };
 })();
 
 

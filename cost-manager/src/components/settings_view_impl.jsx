@@ -84,10 +84,10 @@ const SettingsView = () => {
           Reset to default
         </Button>
         {rates && (
-          <Box>
-            <Typography variant="subtitle1">Current rates</Typography>
-            <pre>{JSON.stringify(rates, null, 2)}</pre>
-            <Typography variant="caption">Last fetched: {lastFetch}</Typography>
+          <Box sx={{ color: '#000' }}>
+            <Typography variant="subtitle1" sx={{ color: '#000' }}>Current rates</Typography>
+            <Box component="pre" sx={{ m: 0, color: '#000' }}>{JSON.stringify(rates, null, 2)}</Box>
+            <Typography variant="caption" sx={{ color: '#000' }}>Last fetched: {lastFetch}</Typography>
           </Box>
         )}
       </Stack>
