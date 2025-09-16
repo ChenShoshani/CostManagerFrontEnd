@@ -3,6 +3,7 @@
  * Handles fetching and validating exchange-rate JSON from a URL.
  */
 
+import { AppError } from '../utils/errors.js';
 const REQUIRED_KEYS = ['USD', 'GBP', 'EURO', 'ILS'];
 
 /**
@@ -31,16 +32,7 @@ const normalizeIncomingRates = (json) => {
  * @param {any} json
  * @returns {boolean}
  */
-export const isValidRatesJson = (json) => {
-  const normalized = normalizeIncomingRates(json);
-  for (const key of REQUIRED_KEYS) {
-    const value = normalized[key];
-    if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
-      return false;
-    }
-  }
-  return true;
-};
+// Note: validation is performed inside fetchRates after normalization.
 
 /**
  * Fetch JSON from the provided URL and validate it as exchange rates.
@@ -50,9 +42,7 @@ export const isValidRatesJson = (json) => {
 export const fetchRates = async (url) => {
   const response = await fetch(url, { mode: 'cors' });
   if (!response.ok) {
-    const error = new Error(`Failed to fetch rates. Status ${response.status}`);
-    error.status = response.status;
-    throw error;
+    throw new AppError('FETCH_RATES_FAILED', `Failed to fetch rates. Status ${response.status}`, { status: response.status, url });
   }
   const raw = await response.json();
   const normalized = normalizeIncomingRates(raw);
@@ -60,10 +50,7 @@ export const fetchRates = async (url) => {
   for (const key of REQUIRED_KEYS) {
     const value = normalized[key];
     if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
-      const error = new Error('Invalid rates JSON. Expect keys USD, GBP, EURO, ILS with numeric values.');
-      error.code = 'INVALID_RATES_JSON';
-      error.payload = { json: raw };
-      throw error;
+      throw new AppError('INVALID_RATES_JSON', 'Invalid rates JSON. Expect keys USD, GBP, EURO, ILS with numeric values.', { json: raw });
     }
   }
   // Return only the required normalized keys

@@ -1,4 +1,4 @@
-export { default } from './report_view_impl.jsx';
+export { default } from './ReportViewImpl.jsx';
 
 
 

@@ -17,16 +17,26 @@
    */
   function normalizeIncomingRates(json) {
     if (!json || typeof json !== 'object') { return {}; }
-    var source = (json && typeof json === 'object' && json.rates && typeof json.rates === 'object') ? json.rates : json;
-    var out = {};
-    for (var key in source) {
+    const source = (json && typeof json === 'object' && json.rates && typeof json.rates === 'object') ? json.rates : json;
+    const out = {};
+    for (const key in source) {
       if (Object.prototype.hasOwnProperty.call(source, key)) {
-        var upper = String(key).toUpperCase();
-        var normalizedKey = upper === 'EUR' ? 'EURO' : upper;
+        const upper = String(key).toUpperCase();
+        const normalizedKey = upper === 'EUR' ? 'EURO' : upper;
         out[normalizedKey] = source[key];
       }
     }
     return out;
+  }
+
+  // Lightweight custom error for this IIFE
+  class IDBError extends Error {
+    constructor(code, message, details) {
+      super(message);
+      this.name = 'IDBError';
+      this.code = code;
+      if (details) this.details = details;
+    }
   }
 
   /**
@@ -70,7 +80,7 @@
    * Add a cost item; date/year/month are derived from now.
    */
   function addCost(cost) {
-    if (!db) { return Promise.reject(new Error('Database not initialized. Call openCostsDB() first.')); }
+    if (!db) { return Promise.reject(new IDBError('DB_NOT_INITIALIZED', 'Database not initialized. Call openCostsDB() first.')); }
     const now = new Date();
     const record = {
       sum: cost.sum,
@@ -92,9 +102,9 @@
    */
   function loadRates() {
     return fetch(DEFAULT_RATES_URL, { mode: 'cors' })
-      .then(function (r) { if (!r.ok) { throw new Error('status ' + r.status); } return r.json(); })
+      .then(function (r) { if (!r.ok) { throw new IDBError('FETCH_FAILED', 'status ' + r.status, { status: r.status }); } return r.json(); })
       .then(function (raw) {
-        var normalized = normalizeIncomingRates(raw);
+        const normalized = normalizeIncomingRates(raw);
         if (
           typeof normalized.USD === 'number' && isFinite(normalized.USD) && normalized.USD > 0 &&
           typeof normalized.GBP === 'number' && isFinite(normalized.GBP) && normalized.GBP > 0 &&
@@ -103,7 +113,7 @@
         ) {
           return { USD: normalized.USD, GBP: normalized.GBP, EURO: normalized.EURO, ILS: normalized.ILS };
         }
-        throw new Error('invalid rates json');
+        throw new IDBError('INVALID_RATES_JSON', 'invalid rates json', { raw: raw });
       })
       .catch(function (e) { console.error('Failed to load exchange rates. Using defaults.', e); return DEFAULT_RATES; });
   }
@@ -125,7 +135,7 @@
    * Build a detailed report for a given year/month and currency.
    */
   function getReport(year, month, currency) {
-    if (!db) { return Promise.reject(new Error('Database not initialized. Call openCostsDB() first.')); }
+    if (!db) { return Promise.reject(new IDBError('DB_NOT_INITIALIZED', 'Database not initialized. Call openCostsDB() first.')); }
     const items = [];
     return withStore(db, COSTS_STORE, 'readonly', function (store) {
       const index = store.index('byYearMonth');

@@ -1,4 +1,4 @@
-export { default } from './settings_view_impl.jsx';
+export { default } from './SettingsViewImpl.jsx';
 
 
 

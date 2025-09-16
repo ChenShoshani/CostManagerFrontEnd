@@ -1,4 +1,4 @@
-export { default } from './charts_view_impl.jsx';
+export { default } from './ChartsViewImpl.jsx';
 
 
 

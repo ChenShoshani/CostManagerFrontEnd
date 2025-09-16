@@ -27,7 +27,7 @@ export const buildPieSeries = (costs, currency) => {
  * Aggregate costs per month for a bar chart, converting to the display currency.
  */
 export const buildBarSeries = (costs, year, currency) => {
-  const byMonth = Array(12).fill(0);
+  const byMonth = Array.from({ length: 12 }, () => 0);
   for (const c of costs) {
     if (c.year !== year) {
       continue;
