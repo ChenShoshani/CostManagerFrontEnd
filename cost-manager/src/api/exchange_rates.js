@@ -6,16 +6,35 @@
 const REQUIRED_KEYS = ['USD', 'GBP', 'EURO', 'ILS'];
 
 /**
+ * Normalize an incoming JSON (from flat or nested { rates }) into a plain map
+ * with upper-cased currency codes and EUR mapped to EURO.
+ * Returns the normalized object without validating values.
+ * @param {any} json
+ * @returns {Record<string, any>}
+ */
+const normalizeIncomingRates = (json) => {
+  if (!json || typeof json !== 'object') {
+    return {};
+  }
+  const source = json && typeof json === 'object' && json.rates && typeof json.rates === 'object' ? json.rates : json;
+  const out = {};
+  for (const key of Object.keys(source)) {
+    const upper = String(key).toUpperCase();
+    const normalizedKey = upper === 'EUR' ? 'EURO' : upper;
+    out[normalizedKey] = source[key];
+  }
+  return out;
+};
+
+/**
  * Validate that the given object is a proper exchange rates map.
  * @param {any} json
  * @returns {boolean}
  */
 export const isValidRatesJson = (json) => {
-  if (!json || typeof json !== 'object') {
-    return false;
-  }
+  const normalized = normalizeIncomingRates(json);
   for (const key of REQUIRED_KEYS) {
-    const value = json[key];
+    const value = normalized[key];
     if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
       return false;
     }
@@ -35,14 +54,25 @@ export const fetchRates = async (url) => {
     error.status = response.status;
     throw error;
   }
-  const json = await response.json();
-  if (!isValidRatesJson(json)) {
-    const error = new Error('Invalid rates JSON. Expect keys USD, GBP, EURO, ILS with numeric values.');
-    error.code = 'INVALID_RATES_JSON';
-    error.payload = { json };
-    throw error;
+  const raw = await response.json();
+  const normalized = normalizeIncomingRates(raw);
+  // Validate the presence and correctness of required keys after normalization
+  for (const key of REQUIRED_KEYS) {
+    const value = normalized[key];
+    if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
+      const error = new Error('Invalid rates JSON. Expect keys USD, GBP, EURO, ILS with numeric values.');
+      error.code = 'INVALID_RATES_JSON';
+      error.payload = { json: raw };
+      throw error;
+    }
   }
-  return json;
+  // Return only the required normalized keys
+  return {
+    USD: normalized.USD,
+    GBP: normalized.GBP,
+    EURO: normalized.EURO,
+    ILS: normalized.ILS,
+  };
 };
 
 /**
