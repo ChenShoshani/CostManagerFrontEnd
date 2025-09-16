@@ -5,7 +5,7 @@ import { setRates as setGlobalRates } from '../utils/currency.js';
 import { fetchRates } from '../api/exchange_rates.js';
 import { SettingsError } from '../utils/errors.js';
 
-const DEFAULT_RATES_URL = '/exchange-rates.json';
+const DEFAULT_RATES_URL = 'https://open.er-api.com/v6/latest/USD';
 
 // Validation moved to the API module.
 
@@ -54,7 +54,7 @@ const SettingsView = () => {
     }
   };
 
-  /** Reset to the default embedded rates JSON. */
+  /** Reset to the default ER-API endpoint. */
   const resetToDefault = async () => {
     try {
       setError('');

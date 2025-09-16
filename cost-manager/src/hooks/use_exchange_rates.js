@@ -3,7 +3,7 @@ import { idb } from '../lib/idb.module.js';
 import { setRates } from '../utils/currency.js';
 import { fetchRatesWithFallback } from '../api/exchange_rates.js';
 
-const DEFAULT_RATES_URL = '/exchange-rates.json';
+const DEFAULT_RATES_URL = 'https://open.er-api.com/v6/latest/USD';
 
 // Validation and fetching are handled by the API module now.
 
