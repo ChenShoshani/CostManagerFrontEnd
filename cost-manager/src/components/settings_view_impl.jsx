@@ -84,10 +84,33 @@ const SettingsView = () => {
           Reset to default
         </Button>
         {rates && (
-          <Box sx={{ color: '#000' }}>
-            <Typography variant="subtitle1" sx={{ color: '#000' }}>Current rates</Typography>
-            <Box component="pre" sx={{ m: 0, color: '#000' }}>{JSON.stringify(rates, null, 2)}</Box>
-            <Typography variant="caption" sx={{ color: '#000' }}>Last fetched: {lastFetch}</Typography>
+          <Box>
+            <Box
+              sx={{
+                bgcolor: '#fff',
+                color: '#000',
+                border: '1px solid rgba(0,0,0,0.12)',
+                borderRadius: 1,
+                p: 2,
+              }}
+            >
+              <Typography variant="subtitle1" sx={{ color: 'inherit', mb: 1 }}>Current rates</Typography>
+              <Box
+                component="pre"
+                sx={{
+                  m: 0,
+                  color: 'inherit',
+                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                  fontSize: 12,
+                  overflow: 'auto',
+                }}
+              >
+                {JSON.stringify(rates, null, 2)}
+              </Box>
+              <Typography variant="caption" sx={{ color: 'inherit', display: 'block', mt: 1 }}>
+                Last fetched: {lastFetch}
+              </Typography>
+            </Box>
           </Box>
         )}
       </Stack>
